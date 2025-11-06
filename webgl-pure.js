@@ -1,4 +1,4 @@
-// Pure WebGL/GLSL Flower Generator - No 2D Canvas Fallback
+// WebGL/GLSL Flower Generator
 console.log('Pure WebGL Script loading...');
 
 class PureWebGLFlowerGenerator {
@@ -921,8 +921,8 @@ class PureWebGLFlowerGenerator {
                 return;
             }
             
-            // High resolution multiplier (3x for high quality)
-            const resolutionMultiplier = 3;
+            // High resolution multiplier
+            const resolutionMultiplier = 4;
             const highResWidth = this.canvas.width * resolutionMultiplier;
             const highResHeight = this.canvas.height * resolutionMultiplier;
             
