@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>make a flower</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <div class="canvas-container">
+            <canvas id="flowerCanvas"></canvas>
+        </div>
+            
+        <div class="cards-container">
+            <div class="card buttons">
+                <button id="generateBtn" class="button-primary">make a flower</button>
+                <button id="downloadBtn" class="button-secondary">download</button>
+            </div>
 
+            <div class="card slider">
+                <div class="options">
+                    <div class="option-group">
+                        <input type="range" id="colorHue" min="0" max="360" value="180">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="seed-container">
+            <div class="card seed">
+                <div class="label">pick a seed</div>
+                <input type="number" id="seedControl" class="seed-control" min="0" max="999999" value="12345">
+            </div>
+        </div>
+        
+        <div class="link">
+            <a href="https://nisanord.com" target="_blank" rel="noopener noreferrer">@nisanord</a>
+        </div>
+
+    </main>
+    
+    <script src="webgl-pure.js"></script>
+</body>
+</html>

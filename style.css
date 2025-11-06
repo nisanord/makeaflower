@@ -1,0 +1,300 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
+    background: black;
+    min-height: 100vh;
+    color: snow;
+    overflow: hidden;
+}
+
+main {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+.canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+#flowerCanvas {
+    background: transparent;
+    cursor: crosshair;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+.cards-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+}
+
+.card {
+    background: rgba(16, 16, 16, 0.1);
+    border-radius: 24px;
+    padding: 16px;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: fit-content;
+    width: 240px;
+}
+
+.seed-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.seed-control {
+    width: 100%;
+    padding: 12px 12px;
+    font-size: 12px;
+    font-weight: semibold;
+    font-family: inherit;
+    color: snow;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    outline: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    
+    /* Hide number input arrows */
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+/* Hide Chrome/Safari number input arrows */
+.seed-control::-webkit-outer-spin-button,
+.seed-control::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.seed-control:focus {
+    border: 1px solid snow;
+    background: transparent;
+}
+
+.seed-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.button-primary {
+    width: 100%;
+    padding: 12px 12px;
+    font-size: 12px;
+    font-weight: semibold;
+    font-family: inherit; /* Force button to inherit monospace font */
+    color: snow;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+}
+
+.button-primary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.button-primary:active {
+    transform: scale(0.98);
+}
+
+.button-secondary {
+    width: 100%;
+    padding: 12px 12px;
+    font-size: 12px;
+    font-weight: semibold;
+    font-family: inherit; /* Force button to inherit monospace font */
+    color: snow;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.button-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.button-secondary:active {
+    transform: scale(0.98);
+}
+
+.label {
+    font-weight: semibold;
+    font-family: inherit;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.link {
+    position: fixed;
+    bottom: 28px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.link a {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(16, 16, 16, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.link a:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(16, 16, 16, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.option-group input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.option-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: snow;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.option-group input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.08);
+}
+
+/* Firefox slider thumb */
+.option-group input[type="range"]::-moz-range-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: snow;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.option-group input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .cards-container {
+        bottom: 12px;
+        right: 12px;
+        left: 12px;
+        top: auto;
+        gap: 8px;
+    }
+    
+    .card.slider {
+        position: fixed;
+        top: 128px;
+        right: 12px;
+        left: 12px;
+        z-index: 999;
+    }
+    
+    .card {
+        width: auto;
+        padding: 16px;
+    }
+    
+    .card.buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .button-primary, .button-secondary {
+        padding: 12px 12px;
+        font-size: 12px;
+        font-family: inherit;
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .seed-container {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        bottom: auto;
+    }
+    
+    .seed-container .card {
+        width: auto;
+    }
+    
+    .link {
+        bottom: 104px;
+        left: 32px;
+    }
+    
+    .link a {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+}
