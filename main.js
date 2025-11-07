@@ -1,7 +1,7 @@
-// WebGL/GLSL Flower Generator
-console.log('Pure WebGL Script loading...');
+// WebGL Flower Generator
+console.log('WebGL Script loading...');
 
-class PureWebGLFlowerGenerator {
+class WebGLFlowerGenerator {
     constructor() {
         console.log('PureWebGLFlowerGenerator constructor called');
         
@@ -44,7 +44,7 @@ class PureWebGLFlowerGenerator {
             this.initControls();
             this.setupResizeHandler();
             this.generateFlower();
-            console.log('Pure WebGL initialization successful');
+            console.log('WebGL initialization successful');
         } catch (error) {
             console.error('WebGL initialization failed:', error);
             alert('WebGL initialization failed: ' + error.message);
@@ -111,7 +111,7 @@ class PureWebGLFlowerGenerator {
             }
         `;
 
-        // Advanced fragment shader for sophisticated flower generation
+        // Advanced fragment shader for flower generation
         this.fragmentShaderSource = `
             precision mediump float;
             
@@ -185,7 +185,7 @@ class PureWebGLFlowerGenerator {
                 return vec2(c * p.x - s * p.y, s * p.x + c * p.y);
             }
             
-            // Classic flower shape
+            // 0 - Classic flower
             float classicFlower(vec2 p, float petals, float size) {
                 float angle = atan(p.y, p.x);
                 float radius = length(p);
@@ -200,7 +200,7 @@ class PureWebGLFlowerGenerator {
                 return radius - size * petalPattern;
             }
             
-            // Star-shaped flower
+            // 1 - Star flower
             float starFlower(vec2 p, float petals, float size) {
                 float angle = atan(p.y, p.x);
                 float radius = length(p);
@@ -217,7 +217,7 @@ class PureWebGLFlowerGenerator {
                 return radius - size * (0.4 + starPattern * 0.25);
             }
             
-            // Round, puffy flower
+            // 2 - Round flower
             float roundFlower(vec2 p, float petals, float size) {
                 float angle = atan(p.y, p.x);
                 float radius = length(p);
@@ -233,7 +233,7 @@ class PureWebGLFlowerGenerator {
                 return radius - size * petalPattern;
             }
             
-            // Geometric flower
+            // 3 - Geometric flower
             float geometricFlower(vec2 p, float petals, float size) {
                 float angle = atan(p.y, p.x);
                 float radius = length(p);
@@ -248,25 +248,25 @@ class PureWebGLFlowerGenerator {
                 return radius - size * geoPattern;
             }
             
-            // Simple round flower (perfect circle, no variations)
+            // 4 - Simple round flower (circle, no petals)
             float simpleRoundFlower(vec2 p, float petals, float size) {
                 float radius = length(p);
                 
-                // Perfect circle without any variations - made smaller
+                // Circle - made smaller
                 return radius - size * 0.6;
             }
             
-            // Tulip bud flower - teardrop with sharp top (triangular)
+            // 5 - Tulip bud flower (teardrop with sharp top)
             float tulipBudFlower(vec2 p, float petals, float size) {
-                // Restore the good ellipse-based shape but fix scaling
+                
                 vec2 tulipP = p;
                 
                 // Stretch vertically to make it taller like a tulip
                 tulipP.y *= 1.4;
                 
                 // Create an ellipse that's wider at bottom, narrower at top (triangular taper)
-                float ellipseRadius = 0.35 - tulipP.y * 0.5; // Even more aggressive taper for sharpness
-                ellipseRadius = max(ellipseRadius, 0.005); // Even sharper point at top
+                float ellipseRadius = 0.35 - tulipP.y * 0.5;
+                ellipseRadius = max(ellipseRadius, 0.005);
                 
                 // Calculate distance but use correct scaling pattern like other flowers
                 float dist = length(tulipP / vec2(ellipseRadius, 0.6));
@@ -294,7 +294,7 @@ class PureWebGLFlowerGenerator {
                 else return classicFlower(flowerP, petals, size);
             }
             
-            // Draw flower center with variations (smaller + random size)
+            // Draw flower center with variations
             float getFlowerCenter(vec2 p, float size) {
                 // Add random variation to center size (0.05 to 0.30 of flower size, average ~0.175)
                 float centerSizeVariation = 0.05 + random(vec2(u_randomSeed, u_randomSeed * 1.5)) * 0.25;
@@ -362,7 +362,7 @@ class PureWebGLFlowerGenerator {
                 else return curvedStem(p);
             }
             
-            // Circular leaf shape (clean geometry, longer)
+            // Circular leaf shape
             float circularLeaf(vec2 leafP) {
                 // Make it longer by scaling differently - clean ellipse
                 return length(leafP / vec2(0.035, 0.07)) - 1.0;
@@ -442,8 +442,8 @@ class PureWebGLFlowerGenerator {
                 // Background color (transparent)
                 vec3 color = vec3(0.0, 0.0, 0.0);
                 
-                // Flower parameters (smaller overall size)
-                float flowerRadius = u_flowerSize * 0.25; // Reduced from 0.35 to 0.25
+                // Flower parameters (overall size)
+                float flowerRadius = u_flowerSize * 0.25; // Last time reduced from 0.35 to 0.25
                 
                 // Calculate stem angle for curved stems
                 float stemAngle = 0.0;
@@ -479,7 +479,7 @@ class PureWebGLFlowerGenerator {
                 }
                 
                 float stemMask = 1.0 - smoothstep(-0.005, 0.005, stemDist);
-                float leafMask = 1.0 - smoothstep(-0.08, 0.08, leafDist); // Extra blurry leaves with even wider transition
+                float leafMask = 1.0 - smoothstep(-0.08, 0.08, leafDist); // Blurry leaves
                 
                 // Apply hue shift to colors
                 vec3 shiftedStemColor = shiftHue(u_stemColor, u_hueShift);
@@ -921,8 +921,8 @@ class PureWebGLFlowerGenerator {
                 return;
             }
             
-            // High resolution multiplier (3x for high quality)
-            const resolutionMultiplier = 3;
+            // High resolution multiplier
+            const resolutionMultiplier = 4;
             const highResWidth = this.canvas.width * resolutionMultiplier;
             const highResHeight = this.canvas.height * resolutionMultiplier;
             
@@ -1055,8 +1055,8 @@ class PureWebGLFlowerGenerator {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing Pure WebGL flower generator');
-    new PureWebGLFlowerGenerator();
+    console.log('DOM loaded, initializing WebGL flower generator');
+    new WebGLFlowerGenerator();
 });
 
-console.log('Pure WebGL Script loaded completely');
+console.log('WebGL Script loaded completely');
