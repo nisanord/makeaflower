@@ -1040,7 +1040,7 @@ class WebGLFlowerGenerator {
             
             // Create download link
             const link = document.createElement('a');
-            link.download = `webgl-flower-${highResWidth}x${highResHeight}-${Date.now()}.png`;
+            link.download = `flowerseed-${highResWidth}x${highResHeight}-${Date.now()}.png`;
             
             // Get canvas data URL from the final composited canvas
             const dataURL = finalCanvas.toDataURL('image/png');
