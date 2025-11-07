@@ -1047,7 +1047,7 @@ class WebGLFlowerGenerator {
             
             if (dataURL === 'data:,') {
                 console.error('Canvas is empty - cannot download');
-                alert('Canvas appears to be empty. Please generate a flower first.');
+                alert('Download failed, please save the seed and try again later');
                 return;
             }
             
