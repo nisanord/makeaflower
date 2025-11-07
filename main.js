@@ -78,26 +78,40 @@ class WebGLFlowerGenerator {
     }
     
     resizeCanvas() {
-        // Set canvas internal resolution to match viewport
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        const viewport = window.visualViewport;
+        const cssWidth = viewport ? viewport.width : window.innerWidth;
+        const cssHeight = viewport ? viewport.height : window.innerHeight;
+        const dpr = window.devicePixelRatio || 1;
+
+        // Align canvas CSS size with the visual viewport
+        this.canvas.style.width = `${cssWidth}px`;
+        this.canvas.style.height = `${cssHeight}px`;
+
+        // Set canvas internal resolution to match viewport * device pixel ratio for sharpness
+        this.canvas.width = Math.max(1, Math.round(cssWidth * dpr));
+        this.canvas.height = Math.max(1, Math.round(cssHeight * dpr));
+
+        if (this.gl) {
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        }
         
-        console.log(`Canvas resized to: ${this.canvas.width}x${this.canvas.height}`);
+        console.log(`Canvas resized to: ${this.canvas.width}x${this.canvas.height} (CSS: ${cssWidth}x${cssHeight}, DPR: ${dpr})`);
     }
     
     setupResizeHandler() {
-        // Handle window resize
-        window.addEventListener('resize', () => {
+        const handleResize = () => {
             this.resizeCanvas();
-            if (this.gl) {
-                // Update WebGL viewport
-                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-                // Regenerate current flower with new dimensions
-                if (this.currentFlowerData) {
-                    this.updateColors();
-                }
+            if (this.gl && this.currentFlowerData) {
+                this.updateColors();
             }
-        });
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleResize);
+            window.visualViewport.addEventListener('scroll', handleResize);
+        }
     }
     
     initWebGL() {

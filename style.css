@@ -4,6 +4,18 @@
     box-sizing: border-box;
 }
 
+:root {
+    --viewport-width: 100vw;
+    --viewport-height: 100vh;
+}
+
+@supports (width: 100dvw) and (height: 100dvh) {
+    :root {
+        --viewport-width: 100dvw;
+        --viewport-height: 100dvh;
+    }
+}
+
 body {
     font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
     background: black;
@@ -14,8 +26,8 @@ body {
 
 main {
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: var(--viewport-width);
+    height: var(--viewport-height);
     margin: 0;
     padding: 0;
     display: block;
@@ -25,8 +37,8 @@ main {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: var(--viewport-width);
+    height: var(--viewport-height);
     background: transparent;
     padding: 0;
     margin: 0;
@@ -35,8 +47,8 @@ main {
 #flowerCanvas {
     background: transparent;
     cursor: crosshair;
-    width: 100vw;
-    height: 100vh;
+    width: var(--viewport-width);
+    height: var(--viewport-height);
     display: block;
 }
 
