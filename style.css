@@ -107,7 +107,7 @@ main {
     padding: 12px 12px;
     font-size: 12px;
     font-weight: semibold;
-    font-family: inherit; 
+    font-family: inherit;
     color: snow;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid transparent;
@@ -130,7 +130,7 @@ main {
     padding: 12px 12px;
     font-size: 12px;
     font-weight: semibold;
-    font-family: inherit; 
+    font-family: inherit;
     color: snow;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.1);
