@@ -931,12 +931,12 @@ class WebGLFlowerGenerator {
             
             if (!this.currentFlowerData) {
                 console.error('No flower data available');
-                alert('Please generate a flower first.');
+                alert('Download failed, please save the seed and try again later');
                 return;
             }
             
             // High resolution multiplier
-            const resolutionMultiplier = 4;
+            const resolutionMultiplier = 3;
             const highResWidth = this.canvas.width * resolutionMultiplier;
             const highResHeight = this.canvas.height * resolutionMultiplier;
             
