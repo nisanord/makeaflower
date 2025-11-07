@@ -3,7 +3,7 @@ name: Deploy to Gandi via SFTP
 on:
   push:
     branches:
-      - main   # change to 'master' if your default branch is master
+      - main
 
 jobs:
   deploy:
@@ -18,11 +18,15 @@ jobs:
         with:
           username: ${{ secrets.SFTP_USERNAME }}
           server: sftp.dc2.gpaas.net
-          ssh_private_key: ${{ secrets.SFTP_SSH_KEY }}
+          port: 22
+
+          # PASSWORD instead of ssh_private_key
+          password: ${{ secrets.SFTP_PASSWORD }}
+          sftp_only: true
           # everything in the repo root (your index.html, css, js)
           local_path: './*'
-          # ⬇️ replace this with the remote path you saw in FileZilla
+          # ⬇️ the remote path from FileZilla
           remote_path: '/lamp0/web/vhosts/flowerseed.io/htdocs'
-          # optional, but nice: don’t upload git + workflow files
+          # optional: don’t upload git + workflow files
           rsyncArgs: '--exclude=.git --exclude=.github'
           sftpArgs: '-o ConnectTimeout=5'
