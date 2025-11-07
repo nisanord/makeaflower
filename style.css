@@ -98,15 +98,6 @@ main {
     -moz-appearance: textfield;
 }
 
-@supports (-webkit-touch-callout: none) {
-    .seed-control {
-        font-size: 16px;
-        width: calc(100% / 0.75);
-        transform: scale(0.75);
-        transform-origin: center;
-    }
-}
-
 /* Hide Chrome/Safari number input arrows */
 .seed-control::-webkit-outer-spin-button,
 .seed-control::-webkit-inner-spin-button {
