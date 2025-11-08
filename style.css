@@ -255,6 +255,19 @@ main {
 }
 
 @media (max-width: 768px) {
+    html, body {
+        height: var(--viewport-height);
+        overflow: hidden;
+    }
+
+    main {
+        position: fixed;
+        inset: 0;
+        width: var(--viewport-width);
+        height: var(--viewport-height);
+        overflow: hidden;
+    }
+
     .cards-container {
         bottom: 12px;
         right: 12px;
