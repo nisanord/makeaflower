@@ -358,11 +358,16 @@ main {
     }
 
     /* Collapsed state */
-    body.menu-collapsed .seed-container,
+    body.menu-collapsed .seed-container {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-80px);
+    }
+
     body.menu-collapsed .card.slider {
         opacity: 0;
         pointer-events: none;
-        transform: translateY(-10px);
+        transform: translateY(-220px);
     }
 
     body.menu-collapsed .menu-toggle {
@@ -372,7 +377,7 @@ main {
     /* Transition for cards */
     .seed-container,
     .card.slider {
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        transition: opacity 0.4s ease, transform 0.8s ease;
     }
     
 }
