@@ -254,6 +254,10 @@ main {
     transform: scale(1.1);
 }
 
+.menu-toggle {
+    display: none;
+}
+
 @media (max-width: 768px) {
     html, body {
         height: var(--viewport-height);
@@ -322,6 +326,53 @@ main {
     .link a {
         font-size: 12px;
         padding: 6px 10px;
+    }
+
+    .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 190px;
+        right: 32px;
+        z-index: 1001;
+        transition: top 0.3s ease;
+    }
+
+    .menu-toggle-btn {
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.4);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: rgba(16, 16, 16, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .menu-toggle-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Collapsed state */
+    body.menu-collapsed .seed-container,
+    body.menu-collapsed .card.slider {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-10px);
+    }
+
+    body.menu-collapsed .menu-toggle {
+        top: 12px;
+    }
+
+    /* Transition for cards */
+    .seed-container,
+    .card.slider {
+        transition: opacity 0.3s ease, transform 0.3s ease;
     }
     
 }

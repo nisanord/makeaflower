@@ -648,6 +648,8 @@ class WebGLFlowerGenerator {
         this.downloadBtn = document.getElementById('downloadBtn');
         this.colorHueSlider = document.getElementById('colorHue');
         this.seedControl = document.getElementById('seedControl');
+        this.menuToggle = document.getElementById('menuToggle');
+        this.menuToggleText = document.querySelector('.menu-toggle-text');
         
         if (this.generateBtn) {
             this.generateBtn.addEventListener('click', () => {
@@ -694,6 +696,17 @@ class WebGLFlowerGenerator {
             
             // Apply seed when user finishes editing (clicks away)
             this.seedControl.addEventListener('blur', applySeed);
+        }
+
+        // Menu toggle for mobile
+        if (this.menuToggle) {
+            this.menuToggle.addEventListener('click', () => {
+                document.body.classList.toggle('menu-collapsed');
+                const isCollapsed = document.body.classList.contains('menu-collapsed');
+                if (this.menuToggleText) {
+                    this.menuToggleText.textContent = isCollapsed ? 'show menu' : 'hide';
+                }
+            });
         }
         
         // Initialize seed display
