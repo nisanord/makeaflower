@@ -704,7 +704,7 @@ class WebGLFlowerGenerator {
                 document.body.classList.toggle('menu-collapsed');
                 const isCollapsed = document.body.classList.contains('menu-collapsed');
                 if (this.menuToggleText) {
-                    this.menuToggleText.textContent = isCollapsed ? 'show menu' : 'hide';
+                    this.menuToggleText.textContent = isCollapsed ? 'menu' : 'hide';
                 }
             });
         }
