@@ -7,6 +7,60 @@
 :root {
     --viewport-width: 100vw;
     --viewport-height: 100vh;
+    
+    /* Background colors */
+    --body-background: black;
+    --canvas-background: transparent;
+    
+    /* Text colors */
+    --text-primary: snow;
+    --text-secondary: rgba(255, 255, 255, 0.5);
+    --text-tertiary: rgba(255, 255, 255, 0.4);
+    --text-hovered: rgba(255, 255, 255, 0.8);
+    
+    /* Card colors */
+    --card-background: rgba(16, 16, 16, 0.1);
+    --card-border: rgba(255, 255, 255, 0.1);
+    
+    /* Button primary colors */
+    --button-primary-background: rgba(255, 255, 255, 0.1);
+    --button-primary-background-hovered: rgba(255, 255, 255, 0.15);
+    --button-primary-text: snow;
+    --button-primary-border: transparent;
+    
+    /* Button secondary colors */
+    --button-secondary-background: transparent;
+    --button-secondary-background-hovered: rgba(255, 255, 255, 0.05);
+    --button-secondary-text: snow;
+    --button-secondary-border: rgba(255, 255, 255, 0.1);
+    
+    /* Seed control colors */
+    --seed-control-background: transparent;
+    --seed-control-background-focused: transparent;
+    --seed-control-text: snow;
+    --seed-control-border: rgba(255, 255, 255, 0.1);
+    --seed-control-border-focused: snow;
+    --seed-control-placeholder: rgba(255, 255, 255, 0.5);
+    
+    /* Slider colors */
+    --slider-track-background: rgba(255, 255, 255, 0.1);
+    --slider-thumb-background: snow;
+    
+    /* Link colors */
+    --link-text: rgba(255, 255, 255, 0.4);
+    --link-text-hovered: rgba(255, 255, 255, 0.8);
+    --link-background: rgba(16, 16, 16, 0.6);
+    --link-background-hovered: rgba(16, 16, 16, 0.8);
+    --link-border: rgba(255, 255, 255, 0.05);
+    --link-border-hovered: rgba(255, 255, 255, 0.1);
+    
+    /* Menu toggle colors */
+    --menu-toggle-text: rgba(255, 255, 255, 0.4);
+    --menu-toggle-background: rgba(16, 16, 16, 0.6);
+    --menu-toggle-border: rgba(255, 255, 255, 0.05);
+    
+    /* Label colors */
+    --label-text: rgba(255, 255, 255, 0.5);
 }
 
 @supports (width: 100dvw) and (height: 100dvh) {
@@ -18,9 +72,9 @@
 
 body {
     font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
-    background: black;
+    background: var(--body-background);
     min-height: 100vh;
-    color: snow;
+    color: var(--text-primary);
     overflow: hidden;
 }
 
@@ -39,13 +93,13 @@ main {
     left: 0;
     width: var(--viewport-width);
     height: var(--viewport-height);
-    background: transparent;
+    background: var(--canvas-background);
     padding: 0;
     margin: 0;
 }
 
 #flowerCanvas {
-    background: transparent;
+    background: var(--canvas-background);
     cursor: crosshair;
     width: var(--viewport-width);
     height: var(--viewport-height);
@@ -63,11 +117,11 @@ main {
 }
 
 .card {
-    background: rgba(16, 16, 16, 0.1);
+    background: var(--card-background);
     border-radius: 24px;
     padding: 16px;
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--card-border);
     height: fit-content;
     width: 240px;
 }
@@ -85,9 +139,9 @@ main {
     font-size: 12px;
     font-weight: semibold;
     font-family: inherit;
-    color: snow;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--seed-control-text);
+    background: var(--seed-control-background);
+    border: 1px solid var(--seed-control-border);
     border-radius: 8px;
     outline: none;
     text-align: center;
@@ -106,12 +160,12 @@ main {
 }
 
 .seed-control:focus {
-    border: 1px solid snow;
-    background: transparent;
+    border: 1px solid var(--seed-control-border-focused);
+    background: var(--seed-control-background-focused);
 }
 
 .seed-control::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--seed-control-placeholder);
 }
 
 .button-primary {
@@ -120,9 +174,9 @@ main {
     font-size: 12px;
     font-weight: semibold;
     font-family: inherit;
-    color: snow;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid transparent;
+    color: var(--button-primary-text);
+    background: var(--button-primary-background);
+    border: 1px solid var(--button-primary-border);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -131,7 +185,7 @@ main {
 }
 
 .button-primary:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--button-primary-background-hovered);
 }
 
 .button-primary:active {
@@ -144,9 +198,9 @@ main {
     font-size: 12px;
     font-weight: semibold;
     font-family: inherit;
-    color: snow;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--button-secondary-text);
+    background: var(--button-secondary-background);
+    border: 1px solid var(--button-secondary-border);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -154,8 +208,8 @@ main {
 }
 
 .button-secondary:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--button-secondary-background-hovered);
+    border: 1px solid var(--button-secondary-border);
 }
 
 .button-secondary:active {
@@ -165,7 +219,7 @@ main {
 .label {
     font-weight: semibold;
     font-family: inherit;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--label-text);
     font-size: 12px;
     margin-bottom: 12px;
     text-align: center;
@@ -182,20 +236,20 @@ main {
     font-family: inherit;
     font-size: 12px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--link-text);
     text-decoration: none;
     transition: all 0.3s ease;
     padding: 8px 12px;
     border-radius: 8px;
-    background: rgba(16, 16, 16, 0.6);
+    background: var(--link-background);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--link-border);
 }
 
 .link a:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(16, 16, 16, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--link-text-hovered);
+    background: var(--link-background-hovered);
+    border: 1px solid var(--link-border-hovered);
     transform: translateY(-1px);
 }
 
@@ -217,7 +271,7 @@ main {
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--slider-track-background);
     outline: none;
     -webkit-appearance: none;
     appearance: none;
@@ -229,7 +283,7 @@ main {
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    background: snow;
+    background: var(--slider-thumb-background);
     cursor: pointer;
     transition: transform 0.2s ease;
 }
@@ -244,7 +298,7 @@ main {
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    background: snow;
+    background: var(--slider-thumb-background);
     cursor: pointer;
     border: none;
     transition: transform 0.2s ease;
@@ -341,14 +395,14 @@ main {
         font-family: inherit;
         font-size: 12px;
         font-weight: 400;
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--menu-toggle-text);
         text-decoration: none;
         transition: all 0.3s ease;
         padding: 6px 10px;
         border-radius: 8px;
-        background: rgba(16, 16, 16, 0.6);
+        background: var(--menu-toggle-background);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--menu-toggle-border);
         cursor: pointer;
         touch-action: manipulation;
     }
