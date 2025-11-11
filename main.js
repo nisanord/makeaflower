@@ -222,13 +222,13 @@ class WebGLFlowerGenerator {
                 // Offset petals so none align with stem
                 float petalOffset = 3.14159 / petals * 0.75;
                 
-                // Sharp star pattern with shorter petals
+                // Create sharp, pointed star pattern
                 float petalAngle = mod(angle + petalOffset + 3.14159, 6.28318 / petals) * petals;
                 float starPattern = cos(petalAngle - 3.14159 * 0.5) * 0.5 + 0.5;
                 starPattern = pow(starPattern, 2.0);
                 
-                // Shorter petals: increased base size, reduced petal extension
-                return radius - size * (0.4 + starPattern * 0.25);
+                // Compact shape with modest petal extension
+                return radius - size * (0.46 + starPattern * 0.2875);
             }
             
             // 2 - Round flower
@@ -266,7 +266,7 @@ class WebGLFlowerGenerator {
             float simpleRoundFlower(vec2 p, float petals, float size) {
                 float radius = length(p);
                 
-                // Circle - made smaller
+                // Simple circular shape
                 return radius - size * 0.6;
             }
             
@@ -275,18 +275,18 @@ class WebGLFlowerGenerator {
                 
                 vec2 tulipP = p;
                 
-                // Stretch vertically to make it taller like a tulip
+                // Stretch vertically for tulip proportions
                 tulipP.y *= 1.4;
                 
-                // Create an ellipse that's wider at bottom, narrower at top (triangular taper)
+                // Create an ellipse with triangular taper: wider at bottom, narrow at top
                 float ellipseRadius = 0.35 - tulipP.y * 0.5;
                 ellipseRadius = max(ellipseRadius, 0.005);
                 
-                // Calculate distance but use correct scaling pattern like other flowers
+                // Calculate distance with scaled coordinates
                 float dist = length(tulipP / vec2(ellipseRadius, 0.6));
                 
-                // Use same pattern as other flowers: return distance to edge
-                return dist - size * 0.85; // Make it a bit bigger
+                // Return distance to edge
+                return dist - size * 0.85;
             }
             
             
@@ -310,20 +310,20 @@ class WebGLFlowerGenerator {
             
             // Draw flower center with variations
             float getFlowerCenter(vec2 p, float size) {
-                // Add random variation to center size (0.05 to 0.30 of flower size, average ~0.175)
+                // Random center size variation (5% to 30% of flower size)
                 float centerSizeVariation = 0.05 + random(vec2(u_randomSeed, u_randomSeed * 1.5)) * 0.25;
                 float centerDist = sdCircle(p, size * centerSizeVariation);
                 
-                // Add texture to center
+                // Add subtle texture to center
                 float centerNoise = noise(p * 20.0 + u_time) * 0.02;
                 centerDist += centerNoise;
                 
                 return centerDist;
             }
             
-            // Curved stem (simple sine wave)
+            // Curved stem (sine wave)
             float curvedStem(vec2 p) {
-                // Stem Y range - extend to flower center
+                // Stem Y range: flower center to bottom
                 float stemTop = 0.0;
                 float stemBottom = -1.0;
                 
@@ -332,28 +332,28 @@ class WebGLFlowerGenerator {
                     return 1.0;
                 }
                 
-                // Calculate where the sine curve should be at this Y position
+                // Calculate sine curve position at this Y coordinate
                 float curveX = sin(p.y * 3.0) * 0.1;
                 
-                // Simple horizontal distance to the curve
+                // Horizontal distance to the curve
                 return abs(p.x - curveX) - u_stemThickness;
             }
             
-            // Straight stem (simple vertical line)
+            // Straight stem (vertical line)
             float straightStem(vec2 p) {
                 vec2 stemStart = vec2(0.0, 0.0);
                 vec2 stemEnd = vec2(0.0, -1.0);
                 
-                // Simple straight line distance
+                // Distance to vertical line segment
                 vec2 pa = p - stemStart;
                 vec2 ba = stemEnd - stemStart;
                 float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
                 return length(pa - ba * h) - u_stemThickness;
             }
             
-            // Mirrored curved stem (curves in opposite direction)
+            // Mirrored curved stem (curves left instead of right)
             float mirroredCurvedStem(vec2 p) {
-                // Stem Y range - extend to flower center
+                // Stem Y range: flower center to bottom
                 float stemTop = 0.0;
                 float stemBottom = -1.0;
                 
@@ -362,10 +362,28 @@ class WebGLFlowerGenerator {
                     return 1.0;
                 }
                 
-                // Calculate where the mirrored sine curve should be (negative of original)
+                // Calculate mirrored sine curve position (negative horizontal offset)
                 float curveX = -sin(p.y * 3.0) * 0.1;
                 
-                // Simple horizontal distance to the curve
+                // Horizontal distance to the curve
+                return abs(p.x - curveX) - u_stemThickness;
+            }
+            
+            // Wiggle stem (high-frequency sine wave with 3 smooth peaks)
+            float wiggleStem(vec2 p) {
+                // Stem Y range: flower center to bottom
+                float stemTop = 0.0;
+                float stemBottom = -1.0;
+                
+                // Only process points within stem Y range
+                if (p.y > stemTop || p.y < stemBottom) {
+                    return 1.0;
+                }
+                
+                // High frequency (3π) with subtle amplitude for gentle waves
+                float curveX = sin(p.y * 9.42) * 0.03;
+                
+                // Horizontal distance to the curve
                 return abs(p.x - curveX) - u_stemThickness;
             }
             
@@ -373,12 +391,13 @@ class WebGLFlowerGenerator {
             float getStem(vec2 p, int stemType) {
                 if (stemType == 1) return straightStem(p);
                 else if (stemType == 2) return mirroredCurvedStem(p);
+                else if (stemType == 3) return wiggleStem(p);
                 else return curvedStem(p);
             }
             
             // Circular leaf shape
             float circularLeaf(vec2 leafP) {
-                // Make it longer by scaling differently - clean ellipse
+                // Elongated ellipse shape for natural leaf proportions
                 return length(leafP / vec2(0.035, 0.07)) - 1.0;
             }
             
@@ -394,8 +413,8 @@ class WebGLFlowerGenerator {
                 
                 // Conditionally render first leaf (leafCount == 1 or leafCount == 3)
                 if (leafCount == 1 || leafCount == 3) {
-                    // First leaf (adjust position for mirrored curved stem)
-                    float leafY = (stemType == 2) ? -0.32 : -0.38; // Higher for mirrored curved stem
+                    // First leaf position varies by stem type
+                    float leafY = (stemType == 2) ? -0.32 : -0.38;
                     float leafSide = 1.0;
                     
                     // Calculate leaf position based on stem type
@@ -406,13 +425,16 @@ class WebGLFlowerGenerator {
                     } else if (stemType == 2) {
                         // Mirrored curved stem - follow the mirrored curve
                         stemX = -sin(leafY * 3.0) * 0.1;
+                    } else if (stemType == 3) {
+                        // Wiggle stem - follow the wiggle
+                        stemX = sin(leafY * 9.42) * 0.03;
                     }
                     
                     // Position leaf offset from the stem curve
                     vec2 leafPos = vec2(stemX + leafSide * 0.05, leafY);
                     
                     vec2 leafP = p - leafPos;
-                    // Adjust angle for mirrored curved stem (closer to stem)
+                    // Leaf rotation angle varies by stem type
                     float leafAngle = (stemType == 2) ? leafSide * 0.6 : leafSide * 0.8;
                     leafP = rotate(leafP, leafAngle);
                     
@@ -435,6 +457,9 @@ class WebGLFlowerGenerator {
                     } else if (stemType == 2) {
                         // Mirrored curved stem - follow the mirrored curve
                         stemX = -sin(leafY * 3.0) * 0.1;
+                    } else if (stemType == 3) {
+                        // Wiggle stem - follow the wiggle
+                        stemX = sin(leafY * 9.42) * 0.03;
                     }
                     
                     // Position leaf offset from the stem curve
@@ -458,21 +483,26 @@ class WebGLFlowerGenerator {
                 // Background color (transparent)
                 vec3 color = vec3(0.0, 0.0, 0.0);
                 
-                // Flower parameters (overall size)
-                float flowerRadius = u_flowerSize * 0.25; // Last time reduced from 0.35 to 0.25
+                // Flower parameters (overall size multiplier)
+                float flowerRadius = u_flowerSize * 0.25;
                 
-                // Calculate stem angle for curved stems
+                // Calculate stem angle at flower attachment point for curved stems
                 float stemAngle = 0.0;
                 if (u_stemType == 0) {
-                    // For curved stems, calculate the slope at flower attachment point
+                    // Curved stem: calculate slope at attachment point
                     float attachmentY = 0.0;
-                    float stemSlope = cos(attachmentY * 3.0) * 3.0 * 0.1; // Derivative of curve
-                    stemAngle = atan(stemSlope) * 0.5; // Moderate angle following stem direction
+                    float stemSlope = cos(attachmentY * 3.0) * 3.0 * 0.1;
+                    stemAngle = atan(stemSlope) * 0.5;
                 } else if (u_stemType == 2) {
-                    // For mirrored curved stems, calculate the mirrored slope
+                    // Mirrored curved stem: calculate slope at attachment point
                     float attachmentY = 0.0;
-                    float stemSlope = -cos(attachmentY * 3.0) * 3.0 * 0.1; // Negative derivative for mirror
-                    stemAngle = atan(stemSlope) * 0.5; // Moderate angle following mirrored stem direction
+                    float stemSlope = -cos(attachmentY * 3.0) * 3.0 * 0.1;
+                    stemAngle = atan(stemSlope) * 0.5;
+                } else if (u_stemType == 3) {
+                    // Wiggle stem: calculate slope at attachment point
+                    float attachmentY = 0.0;
+                    float stemSlope = cos(attachmentY * 9.42) * 9.42 * 0.03;
+                    stemAngle = atan(stemSlope) * 0.5;
                 }
                 
                 // Get distances
@@ -484,10 +514,10 @@ class WebGLFlowerGenerator {
                 // Create masks with smooth anti-aliasing
                 float flowerMask = 1.0 - smoothstep(-0.01, 0.01, flowerDist);
                 
-                // Tulip buds (type 5) don't have a central circle, and randomly remove centers
+                // Tulip buds (type 5) don't have a central circle, others have random chance
                 float centerMask = 0.0;
                 if (u_flowerType != 5) {
-                    // Random chance to have no center circle (10% chance of no center)
+                    // 90% chance to show center circle
                     float showCenter = random(vec2(u_randomSeed * 2.0, u_randomSeed * 3.0));
                     if (showCenter > 0.1) {
                         centerMask = 1.0 - smoothstep(-0.01, 0.01, centerDist);
@@ -495,7 +525,7 @@ class WebGLFlowerGenerator {
                 }
                 
                 float stemMask = 1.0 - smoothstep(-0.005, 0.005, stemDist);
-                float leafMask = 1.0 - smoothstep(-0.08, 0.08, leafDist); // Blurry leaves
+                float leafMask = 1.0 - smoothstep(-0.08, 0.08, leafDist); // Soft-edged leaves
                 
                 // Apply hue shift to colors
                 vec3 shiftedStemColor = shiftHue(u_stemColor, u_hueShift);
@@ -832,17 +862,20 @@ class WebGLFlowerGenerator {
             
             // Generate properties using seed
             const petalCount = 5 + Math.floor(this.seedRandom() * 8); // 5-12 petals
-            let flowerSize = 0.8 + this.seedRandom() * 0.4; // 0.8-1.2 size (limited range)
+            let flowerSize = 0.8 + this.seedRandom() * 0.4; // 0.8-1.2 size range
             const colorPalette = this.getRandomColorPalette();
-            const stemType = Math.floor(this.seedRandom() * 3); // 0-2 for different stem types
+            const stemType = Math.floor(this.seedRandom() * 4); // 0-3: curved, straight, mirrored, wiggle
             
-            // Don't show tulip flowers (type 5) on curved stems (types 0 and 2)
+            // Assign flower types based on stem type
             // Also ensure flower type changes on every generation
             let flowerType;
             let availableTypes;
             
-            if (stemType === 0 || stemType === 2) {
-                // Curved stems: exclude tulips, use types 0-4
+            if (stemType === 3) {
+                // Wiggle stems: only circle (4) and tulip (5)
+                availableTypes = [4, 5];
+            } else if (stemType === 0 || stemType === 2) {
+                // Other curved stems: exclude tulips, use types 0-4
                 availableTypes = [0, 1, 2, 3, 4];
             } else {
                 // Straight stems: allow all flower types including tulips
@@ -854,9 +887,15 @@ class WebGLFlowerGenerator {
                 availableTypes = availableTypes.filter(type => type !== this.previousFlowerType);
             }
             
-            // If we somehow have no available types (shouldn't happen), use all types for this stem
+            // If we somehow have no available types (shouldn't happen), reset available types
             if (availableTypes.length === 0) {
-                availableTypes = stemType === 0 || stemType === 2 ? [0, 1, 2, 3, 4] : [0, 1, 2, 3, 4, 5];
+                if (stemType === 3) {
+                    availableTypes = [4, 5];
+                } else if (stemType === 0 || stemType === 2) {
+                    availableTypes = [0, 1, 2, 3, 4];
+                } else {
+                    availableTypes = [0, 1, 2, 3, 4, 5];
+                }
             }
             
             // Select random type from available types
@@ -869,7 +908,8 @@ class WebGLFlowerGenerator {
             this.previousFlowerType = flowerType;
             
             const leafType = 1; // Always use circular leaves (type 1)
-            const leafCount = Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
+            // Wiggle stems (type 3) never have leaves, others get random leaf configuration
+            const leafCount = (stemType === 3) ? 0 : Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
             
             // Fixed stem thickness for all flowers
             const stemThickness = 0.013;
@@ -895,7 +935,7 @@ class WebGLFlowerGenerator {
             flowerSize: flowerSize.toFixed(3), 
             flowerType,
             previousFlowerType: previousTypeForLogging === -1 ? 'NONE (first flower)' : ['Classic', 'Star', 'Round', 'Geometric', 'Simple Round', 'Tulip Bud'][previousTypeForLogging],
-            stemType: stemType === 0 ? 'CURVED (static)' : stemType === 1 ? 'STRAIGHT' : 'MIRRORED_CURVED (static)',
+            stemType: ['CURVED', 'STRAIGHT', 'MIRRORED_CURVED', 'WIGGLE'][stemType],
             stemThickness: stemThickness.toFixed(4),
             stemToFlowerRatio: (stemThickness / flowerSize).toFixed(4),
             leafType: 'CIRCULAR',
