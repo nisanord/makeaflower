@@ -286,7 +286,7 @@ class WebGLFlowerGenerator {
                 float dist = length(tulipP / vec2(ellipseRadius, 0.6));
                 
                 // Return distance to edge
-                return dist - size * 0.85;
+                return dist - size * 0.935;
             }
             
             
