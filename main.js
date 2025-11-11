@@ -388,11 +388,12 @@ class WebGLFlowerGenerator {
             }
             
             // Draw leaves that stick to the stem
+            // leafCount: 0 = no leaves, 1 = first leaf only, 2 = second leaf only, 3 = both leaves
             float getLeaves(vec2 p, int stemType, int leafType, int leafCount) {
                 float leafDist = 1.0;
                 
-                // Conditionally render leaves based on count
-                if (leafCount >= 1) {
+                // Conditionally render first leaf (leafCount == 1 or leafCount == 3)
+                if (leafCount == 1 || leafCount == 3) {
                     // First leaf (adjust position for mirrored curved stem)
                     float leafY = (stemType == 2) ? -0.32 : -0.38; // Higher for mirrored curved stem
                     float leafSide = 1.0;
@@ -420,7 +421,8 @@ class WebGLFlowerGenerator {
                     leafDist = min(leafDist, leafShape);
                 }
                 
-                if (leafCount >= 2) {
+                // Conditionally render second leaf (leafCount == 2 or leafCount == 3)
+                if (leafCount == 2 || leafCount == 3) {
                     // Second leaf
                     float leafY = -0.45;
                     float leafSide = -1.0;
@@ -867,7 +869,7 @@ class WebGLFlowerGenerator {
             this.previousFlowerType = flowerType;
             
             const leafType = 1; // Always use circular leaves (type 1)
-            const leafCount = Math.floor(this.seedRandom() * 3); // 0-2 leaves
+            const leafCount = Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
             
             // Fixed stem thickness for all flowers
             const stemThickness = 0.013;
@@ -898,6 +900,7 @@ class WebGLFlowerGenerator {
             stemToFlowerRatio: (stemThickness / flowerSize).toFixed(4),
             leafType: 'CIRCULAR',
             leafCount,
+            leafConfig: ['No leaves', 'First leaf only', 'Second leaf only', 'Both leaves'][leafCount],
             flowerTypeName: ['Classic', 'Star', 'Round', 'Geometric', 'Simple Round', 'Tulip Bud'][flowerType],
             colorPalette 
         });
