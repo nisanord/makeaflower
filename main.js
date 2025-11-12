@@ -15,7 +15,7 @@ class WebGLFlowerGenerator {
         this.currentSeed = this.generateRandomSeed();
         this.seedRandom = this.createSeededRandom(this.currentSeed);
         
-        // Track previous flower type to ensure variety
+        // Track previous flower type for variety (only affects new generations, not seed input)
         this.previousFlowerType = -1; // -1 means no previous flower
         
         // Set canvas to fullscreen dimensions
@@ -867,7 +867,6 @@ class WebGLFlowerGenerator {
             const stemType = Math.floor(this.seedRandom() * 4); // 0-3: curved, straight, mirrored, wiggle
             
             // Assign flower types based on stem type
-            // Also ensure flower type changes on every generation
             let flowerType;
             let availableTypes;
             
@@ -882,30 +881,22 @@ class WebGLFlowerGenerator {
                 availableTypes = [0, 1, 2, 3, 4, 5];
             }
             
-            // Remove previous flower type to ensure variety
-            if (this.previousFlowerType !== -1) {
-                availableTypes = availableTypes.filter(type => type !== this.previousFlowerType);
-            }
-            
-            // If we somehow have no available types (shouldn't happen), reset available types
-            if (availableTypes.length === 0) {
-                if (stemType === 3) {
-                    availableTypes = [4, 5];
-                } else if (stemType === 0 || stemType === 2) {
-                    availableTypes = [0, 1, 2, 3, 4];
-                } else {
-                    availableTypes = [0, 1, 2, 3, 4, 5];
+            // If generating new flower (not using specific seed), avoid previous flower type for variety
+            if (!useCurrentSeed && this.previousFlowerType !== -1) {
+                const typesWithoutPrevious = availableTypes.filter(type => type !== this.previousFlowerType);
+                // Only filter if we have alternatives
+                if (typesWithoutPrevious.length > 0) {
+                    availableTypes = typesWithoutPrevious;
                 }
             }
             
-            // Select random type from available types
+            // Select type from available types (deterministic based on seed)
             flowerType = availableTypes[Math.floor(this.seedRandom() * availableTypes.length)];
             
-            // Store the previous type before updating (for logging)
-            const previousTypeForLogging = this.previousFlowerType;
-            
-            // Update previous flower type for next generation
-            this.previousFlowerType = flowerType;
+            // Update previous flower type for next generation (only if not using specific seed)
+            if (!useCurrentSeed) {
+                this.previousFlowerType = flowerType;
+            }
             
             const leafType = 1; // Always use circular leaves (type 1)
             // Wiggle stems (type 3) never have leaves, others get random leaf configuration
@@ -934,7 +925,6 @@ class WebGLFlowerGenerator {
             petalCount, 
             flowerSize: flowerSize.toFixed(3), 
             flowerType,
-            previousFlowerType: previousTypeForLogging === -1 ? 'NONE (first flower)' : ['Classic', 'Star', 'Round', 'Geometric', 'Simple Round', 'Tulip Bud'][previousTypeForLogging],
             stemType: ['CURVED', 'STRAIGHT', 'MIRRORED_CURVED', 'WIGGLE'][stemType],
             stemThickness: stemThickness.toFixed(4),
             stemToFlowerRatio: (stemThickness / flowerSize).toFixed(4),
@@ -974,9 +964,10 @@ class WebGLFlowerGenerator {
             // Update seed display
             this.updateSeedDisplay();
             
-            // Generate random hue shift for each new flower (after rendering)
-            if (!useCurrentSeed && this.colorHueSlider) {
-                const randomHue = Math.floor(Math.random() * 361); // 0-360 degrees
+            // Generate deterministic hue shift based on seed (after rendering)
+            if (this.colorHueSlider) {
+                // Use seeded random for deterministic hue (always apply for consistency)
+                const randomHue = Math.floor(this.seedRandom() * 361); // 0-360 degrees
                 this.colorHueSlider.value = randomHue;
                 
                 // Update the display value
@@ -985,7 +976,7 @@ class WebGLFlowerGenerator {
                     valueElement.textContent = randomHue + '°';
                 }
                 
-                console.log('Random hue generated:', randomHue);
+                console.log('Deterministic hue generated from seed:', randomHue);
                 
                 // Apply the new hue by updating colors
                 this.updateColors();
