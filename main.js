@@ -387,11 +387,47 @@ class WebGLFlowerGenerator {
                 return abs(p.x - curveX) - u_stemThickness;
             }
             
+            // Distance to line segment
+            float sdLineSegment(vec2 p, vec2 a, vec2 b, float thickness) {
+                vec2 pa = p - a;
+                vec2 ba = b - a;
+                float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+                return length(pa - ba * h) - thickness;
+            }
+            
+            // Branch stem (straight main stem with 2 curved side branches)
+            float branchStem(vec2 p) {
+                // Main vertical stem from bottom (-1) to top (0.129)
+                float mainStem = sdLineSegment(p, vec2(0.0, -1.0), vec2(0.0, 0.129), u_stemThickness);
+                
+                // Single curved horizontal branch connecting left and right tips
+                float sideBranchDist = 1e10;
+                float branchCenterY = -0.1; // Y position where curve connects to main stem
+                
+                // Create one continuous curve from left (-0.15, -0.002) through center (0.0, branchCenterY) to right (0.15, -0.002)
+                vec2 prevPoint = vec2(-0.15, -0.002);
+                for (float i = 0.1; i <= 1.0; i += 0.05) {
+                    float t = i;
+                    // Horizontal position from -0.15 to 0.15
+                    float x = -0.15 + t * 0.3;
+                    // Y position as a downward curve (parabola) - deeper curve
+                    float y = -0.002 - (1.0 - pow(2.0 * t - 1.0, 2.0)) * 0.19;
+                    vec2 nextPoint = vec2(x, y);
+                    float segDist = sdLineSegment(p, prevPoint, nextPoint, u_stemThickness);
+                    sideBranchDist = min(sideBranchDist, segDist);
+                    prevPoint = nextPoint;
+                }
+                
+                // Combine all branches (minimum distance)
+                return min(mainStem, sideBranchDist);
+            }
+            
             // Get stem based on type
             float getStem(vec2 p, int stemType) {
                 if (stemType == 1) return straightStem(p);
                 else if (stemType == 2) return mirroredCurvedStem(p);
                 else if (stemType == 3) return wiggleStem(p);
+                else if (stemType == 4) return branchStem(p);
                 else return curvedStem(p);
             }
             
@@ -512,15 +548,37 @@ class WebGLFlowerGenerator {
                 float leafDist = getLeaves(uv, u_stemType, u_leafType, u_leafCount);
                 
                 // Create masks with smooth anti-aliasing
-                float flowerMask = 1.0 - smoothstep(-0.01, 0.01, flowerDist);
-                
-                // Tulip buds (type 5) don't have a central circle, others have random chance
+                float flowerMask = 0.0;
                 float centerMask = 0.0;
-                if (u_flowerType != 5) {
-                    // 90% chance to show center circle
-                    float showCenter = random(vec2(u_randomSeed * 2.0, u_randomSeed * 3.0));
-                    if (showCenter > 0.1) {
-                        centerMask = 1.0 - smoothstep(-0.01, 0.01, centerDist);
+                
+                if (u_stemType == 4) {
+                    // Branch stems: render circle flowers at each branch tip
+                    vec2 branchTips[3];
+                    branchTips[0] = vec2(0.0, 0.129);      // Main stem top
+                    branchTips[1] = vec2(-0.15, -0.002);   // Left branch tip
+                    branchTips[2] = vec2(0.15, -0.002);    // Right branch tip
+                    
+                    float branchFlowerSize = 0.15; // Size for branch flowers
+                    
+                    for (int i = 0; i < 3; i++) {
+                        vec2 flowerPos = uv - branchTips[i];
+                        
+                        // Circle flower only (without center circle)
+                        float branchFlowerDist = simpleRoundFlower(flowerPos, 5.0, branchFlowerSize);
+                        
+                        flowerMask = max(flowerMask, 1.0 - smoothstep(-0.01, 0.01, branchFlowerDist));
+                    }
+                } else {
+                    // Regular stems: single flower at top
+                    flowerMask = 1.0 - smoothstep(-0.01, 0.01, flowerDist);
+                    
+                    // Tulip buds (type 5) don't have a central circle
+                    if (u_flowerType != 5) {
+                        // 90% chance to show center circle
+                        float showCenter = random(vec2(u_randomSeed * 2.0, u_randomSeed * 3.0));
+                        if (showCenter > 0.1) {
+                            centerMask = 1.0 - smoothstep(-0.01, 0.01, centerDist);
+                        }
                     }
                 }
                 
@@ -864,7 +922,7 @@ class WebGLFlowerGenerator {
             const petalCount = 5 + Math.floor(this.seedRandom() * 8); // 5-12 petals
             let flowerSize = 0.8 + this.seedRandom() * 0.4; // 0.8-1.2 size range
             const colorPalette = this.getRandomColorPalette();
-            const stemType = Math.floor(this.seedRandom() * 4); // 0-3: curved, straight, mirrored, wiggle
+            const stemType = Math.floor(this.seedRandom() * 5); // 0-4: curved, straight, mirrored, wiggle, branch
             
             // Assign flower types based on stem type
             let flowerType;
@@ -873,6 +931,9 @@ class WebGLFlowerGenerator {
             if (stemType === 3) {
                 // Wiggle stems: only circle (4) and tulip (5)
                 baseAvailableTypes = [4, 5];
+            } else if (stemType === 4) {
+                // Branch stems: only circle (4)
+                baseAvailableTypes = [4];
             } else if (stemType === 0 || stemType === 2) {
                 // Other curved stems: exclude tulips, use types 0-4
                 baseAvailableTypes = [0, 1, 2, 3, 4];
@@ -904,7 +965,7 @@ class WebGLFlowerGenerator {
             }
             
             const leafType = 1; // Always use circular leaves (type 1)
-            // Wiggle stems (type 3) never have leaves, others get random leaf configuration
+            // Wiggle stems (type 3) never have leaves
             const leafCount = (stemType === 3) ? 0 : Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
             
             // Fixed stem thickness for all flowers
@@ -930,7 +991,7 @@ class WebGLFlowerGenerator {
             petalCount, 
             flowerSize: flowerSize.toFixed(3), 
             flowerType,
-            stemType: ['CURVED', 'STRAIGHT', 'MIRRORED_CURVED', 'WIGGLE'][stemType],
+            stemType: ['CURVED', 'STRAIGHT', 'MIRRORED_CURVED', 'WIGGLE', 'BRANCH'][stemType],
             stemThickness: stemThickness.toFixed(4),
             stemToFlowerRatio: (stemThickness / flowerSize).toFixed(4),
             leafType: 'CIRCULAR',
