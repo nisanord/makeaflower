@@ -868,33 +868,38 @@ class WebGLFlowerGenerator {
             
             // Assign flower types based on stem type
             let flowerType;
-            let availableTypes;
+            let baseAvailableTypes; // Base types determined by stem
             
             if (stemType === 3) {
                 // Wiggle stems: only circle (4) and tulip (5)
-                availableTypes = [4, 5];
+                baseAvailableTypes = [4, 5];
             } else if (stemType === 0 || stemType === 2) {
                 // Other curved stems: exclude tulips, use types 0-4
-                availableTypes = [0, 1, 2, 3, 4];
+                baseAvailableTypes = [0, 1, 2, 3, 4];
             } else {
                 // Straight stems: allow all flower types including tulips
-                availableTypes = [0, 1, 2, 3, 4, 5];
+                baseAvailableTypes = [0, 1, 2, 3, 4, 5];
             }
             
-            // If generating new flower (not using specific seed), avoid previous flower type for variety
-            if (!useCurrentSeed && this.previousFlowerType !== -1) {
-                const typesWithoutPrevious = availableTypes.filter(type => type !== this.previousFlowerType);
-                // Only filter if we have alternatives
-                if (typesWithoutPrevious.length > 0) {
-                    availableTypes = typesWithoutPrevious;
+            // Choose flower type based on whether we're using a specific seed or generating new
+            if (useCurrentSeed) {
+                // Using specific seed: always use full base types (deterministic)
+                flowerType = baseAvailableTypes[Math.floor(this.seedRandom() * baseAvailableTypes.length)];
+            } else {
+                // Generating new: apply variety logic to avoid repetition
+                let availableTypes = [...baseAvailableTypes]; // Copy array
+                
+                if (this.previousFlowerType !== -1) {
+                    const typesWithoutPrevious = availableTypes.filter(type => type !== this.previousFlowerType);
+                    // Only filter if we have alternatives
+                    if (typesWithoutPrevious.length > 0) {
+                        availableTypes = typesWithoutPrevious;
+                    }
                 }
-            }
-            
-            // Select type from available types (deterministic based on seed)
-            flowerType = availableTypes[Math.floor(this.seedRandom() * availableTypes.length)];
-            
-            // Update previous flower type for next generation (only if not using specific seed)
-            if (!useCurrentSeed) {
+                
+                flowerType = availableTypes[Math.floor(this.seedRandom() * availableTypes.length)];
+                
+                // Update previous flower type for next generation
                 this.previousFlowerType = flowerType;
             }
             
