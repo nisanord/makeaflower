@@ -15,8 +15,9 @@ class WebGLFlowerGenerator {
         this.currentSeed = this.generateRandomSeed();
         this.seedRandom = this.createSeededRandom(this.currentSeed);
         
-        // Track previous flower type for variety (only affects new generations, not seed input)
+        // Track previous flower type and stem type for variety (only affects new generations, not seed input)
         this.previousFlowerType = -1; // -1 means no previous flower
+        this.previousStemType = -1; // -1 means no previous stem
         
         // Set canvas to fullscreen dimensions
         this.resizeCanvas();
@@ -143,6 +144,7 @@ class WebGLFlowerGenerator {
             uniform int u_leafCount;
             uniform float u_randomSeed;
             uniform float u_hueShift;
+            uniform bool u_branchShowCenter;
             
             // Improved random function
             float random(vec2 st) {
@@ -563,10 +565,15 @@ class WebGLFlowerGenerator {
                     for (int i = 0; i < 3; i++) {
                         vec2 flowerPos = uv - branchTips[i];
                         
-                        // Circle flower only (without center circle)
+                        // Circle flower only
                         float branchFlowerDist = simpleRoundFlower(flowerPos, 5.0, branchFlowerSize);
-                        
                         flowerMask = max(flowerMask, 1.0 - smoothstep(-0.01, 0.01, branchFlowerDist));
+                        
+                        // Optionally add center circle
+                        if (u_branchShowCenter) {
+                            float branchCenterDist = sdCircle(flowerPos, branchFlowerSize * 0.15);
+                            centerMask = max(centerMask, 1.0 - smoothstep(-0.01, 0.01, branchCenterDist));
+                        }
                     }
                 } else {
                     // Regular stems: single flower at top
@@ -643,7 +650,8 @@ class WebGLFlowerGenerator {
             leafType: gl.getUniformLocation(this.program, 'u_leafType'),
             leafCount: gl.getUniformLocation(this.program, 'u_leafCount'),
             randomSeed: gl.getUniformLocation(this.program, 'u_randomSeed'),
-            hueShift: gl.getUniformLocation(this.program, 'u_hueShift')
+            hueShift: gl.getUniformLocation(this.program, 'u_hueShift'),
+            branchShowCenter: gl.getUniformLocation(this.program, 'u_branchShowCenter')
         };
         
         // Create buffer for fullscreen quad
@@ -843,6 +851,7 @@ class WebGLFlowerGenerator {
             gl.uniform1i(this.uniformLocations.stemType, data.stemType);
             gl.uniform1f(this.uniformLocations.randomSeed, data.randomSeed);
             gl.uniform1f(this.uniformLocations.hueShift, hueShift);
+            gl.uniform1i(this.uniformLocations.branchShowCenter, data.branchShowCenter ? 1 : 0);
             
             // Clear and draw with transparent background
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -922,7 +931,26 @@ class WebGLFlowerGenerator {
             const petalCount = 5 + Math.floor(this.seedRandom() * 8); // 5-12 petals
             let flowerSize = 0.8 + this.seedRandom() * 0.4; // 0.8-1.2 size range
             const colorPalette = this.getRandomColorPalette();
-            const stemType = Math.floor(this.seedRandom() * 5); // 0-4: curved, straight, mirrored, wiggle, branch
+            
+            // Generate stem type with variety logic (only for new generations, not seed input)
+            let stemType;
+            if (useCurrentSeed) {
+                // Using specific seed: deterministic stem type
+                stemType = Math.floor(this.seedRandom() * 5); // 0-4: curved, straight, mirrored, wiggle, branch
+            } else {
+                // Generating new: avoid branch repetition only
+                let availableStemTypes = [0, 1, 2, 3, 4]; // All stem types
+                
+                // If previous was branch (type 4), exclude it
+                if (this.previousStemType === 4) {
+                    availableStemTypes = [0, 1, 2, 3]; // Exclude branch
+                }
+                
+                stemType = availableStemTypes[Math.floor(this.seedRandom() * availableStemTypes.length)];
+                
+                // Update previous stem type for next generation
+                this.previousStemType = stemType;
+            }
             
             // Assign flower types based on stem type
             let flowerType;
@@ -935,11 +963,11 @@ class WebGLFlowerGenerator {
                 // Branch stems: only circle (4)
                 baseAvailableTypes = [4];
             } else if (stemType === 0 || stemType === 2) {
-                // Other curved stems: exclude tulips, use types 0-4
-                baseAvailableTypes = [0, 1, 2, 3, 4];
+                // Other curved stems: exclude tulips, use types 0-4 (rounded-petals type 2 appears 3x for higher chance)
+                baseAvailableTypes = [0, 1, 2, 2, 2, 3, 4];
             } else {
-                // Straight stems: allow all flower types including tulips
-                baseAvailableTypes = [0, 1, 2, 3, 4, 5];
+                // Straight stems: allow all flower types including tulips (rounded-petals type 2 appears 3x for higher chance)
+                baseAvailableTypes = [0, 1, 2, 2, 2, 3, 4, 5];
             }
             
             // Choose flower type based on whether we're using a specific seed or generating new
@@ -966,12 +994,19 @@ class WebGLFlowerGenerator {
             
             const leafType = 1; // Always use circular leaves (type 1)
             // Wiggle stems (type 3) never have leaves
-            const leafCount = (stemType === 3) ? 0 : Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
+            let leafCount = (stemType === 3) ? 0 : Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
+            // Tulip flowers (type 5) always have at least one leaf
+            if (flowerType === 5 && leafCount === 0) {
+                leafCount = 1 + Math.floor(this.seedRandom() * 3); // 1-3: at least one leaf
+            }
             
             // Fixed stem thickness for all flowers
             const stemThickness = 0.013;
             const randomSeed = this.seedRandom() * 1000;
             const time = Date.now() / 1000;
+            
+            // Branch stems sometimes show center circles (50% chance)
+            const branchShowCenter = (stemType === 4) ? (this.seedRandom() > 0.5) : false;
             
                     // Store current flower data for color updates
             this.currentFlowerData = {
@@ -984,7 +1019,8 @@ class WebGLFlowerGenerator {
             leafCount,
             stemThickness,
             randomSeed,
-            time
+            time,
+            branchShowCenter
         };
             
                     console.log('Flower properties:', { 
@@ -1019,6 +1055,7 @@ class WebGLFlowerGenerator {
             gl.uniform1i(this.uniformLocations.leafCount, leafCount);
             gl.uniform1f(this.uniformLocations.randomSeed, randomSeed);
             gl.uniform1f(this.uniformLocations.hueShift, hueShift);
+            gl.uniform1i(this.uniformLocations.branchShowCenter, branchShowCenter ? 1 : 0);
             
             // Clear and draw with transparent background
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -1118,7 +1155,8 @@ class WebGLFlowerGenerator {
                 leafType: highResGl.getUniformLocation(highResProgram, 'u_leafType'),
                 leafCount: highResGl.getUniformLocation(highResProgram, 'u_leafCount'),
                 randomSeed: highResGl.getUniformLocation(highResProgram, 'u_randomSeed'),
-                hueShift: highResGl.getUniformLocation(highResProgram, 'u_hueShift')
+                hueShift: highResGl.getUniformLocation(highResProgram, 'u_hueShift'),
+                branchShowCenter: highResGl.getUniformLocation(highResProgram, 'u_branchShowCenter')
             };
             
             const highResPositionLocation = highResGl.getAttribLocation(highResProgram, 'a_position');
@@ -1150,6 +1188,7 @@ class WebGLFlowerGenerator {
             highResGl.uniform1i(highResUniformLocations.leafCount, data.leafCount);
             highResGl.uniform1f(highResUniformLocations.randomSeed, data.randomSeed);
             highResGl.uniform1f(highResUniformLocations.hueShift, hueShift);
+            highResGl.uniform1i(highResUniformLocations.branchShowCenter, data.branchShowCenter ? 1 : 0);
             
             // Clear and draw
             highResGl.clear(highResGl.COLOR_BUFFER_BIT);
