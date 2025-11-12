@@ -842,24 +842,6 @@ class WebGLFlowerGenerator {
             this.seedRandom = this.createSeededRandom(this.currentSeed);
         }
         
-        // Generate random hue shift for each new flower
-        if (!useCurrentSeed && this.colorHueSlider) {
-            const randomHue = Math.floor(Math.random() * 361); // 0-360 degrees
-            this.colorHueSlider.value = randomHue;
-            
-            // Update the display value
-            const valueElement = document.getElementById('colorHueValue');
-            if (valueElement) {
-                valueElement.textContent = randomHue + '°';
-            }
-            
-            // Trigger input event for Safari compatibility
-            const event = new Event('input', { bubbles: true });
-            this.colorHueSlider.dispatchEvent(event);
-            
-            console.log('Random hue generated:', randomHue);
-        }
-        
         const gl = this.gl;
         if (!gl || !this.program) {
             console.error('WebGL not properly initialized');
@@ -991,6 +973,23 @@ class WebGLFlowerGenerator {
             
             // Update seed display
             this.updateSeedDisplay();
+            
+            // Generate random hue shift for each new flower (after rendering)
+            if (!useCurrentSeed && this.colorHueSlider) {
+                const randomHue = Math.floor(Math.random() * 361); // 0-360 degrees
+                this.colorHueSlider.value = randomHue;
+                
+                // Update the display value
+                const valueElement = document.getElementById('colorHueValue');
+                if (valueElement) {
+                    valueElement.textContent = randomHue + '°';
+                }
+                
+                console.log('Random hue generated:', randomHue);
+                
+                // Apply the new hue by updating colors
+                this.updateColors();
+            }
             
         } catch (error) {
             console.error('Error generating flower:', error);
