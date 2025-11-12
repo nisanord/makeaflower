@@ -853,6 +853,10 @@ class WebGLFlowerGenerator {
                 valueElement.textContent = randomHue + '°';
             }
             
+            // Trigger input event for Safari compatibility
+            const event = new Event('input', { bubbles: true });
+            this.colorHueSlider.dispatchEvent(event);
+            
             console.log('Random hue generated:', randomHue);
         }
         
