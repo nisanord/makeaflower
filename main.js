@@ -13,6 +13,7 @@ class WebGLFlowerGenerator {
         
         // Initialize seed system
         this.currentSeed = this.generateRandomSeed();
+        this.currentSeedInput = this.currentSeed.toString(); // Store original input (text or number)
         this.seedRandom = this.createSeededRandom(this.currentSeed);
         
         // Track previous flower type and stem type for variety (only affects new generations, not seed input)
@@ -57,6 +58,18 @@ class WebGLFlowerGenerator {
         return Math.floor(Math.random() * 999999);
     }
     
+    // Convert any string (including Unicode) to a numeric seed
+    stringToSeed(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        // Ensure positive number and limit to 6 digits for consistency
+        return Math.abs(hash) % 1000000;
+    }
+    
     createSeededRandom(seed) {
         // Simple seeded random number generator (LCG)
         let current = seed;
@@ -66,15 +79,24 @@ class WebGLFlowerGenerator {
         };
     }
     
-    setSeed(seed) {
-        this.currentSeed = seed;
-        this.seedRandom = this.createSeededRandom(seed);
+    setSeed(seedInput) {
+        // Store original input (can be string or number)
+        this.currentSeedInput = seedInput.toString();
+        
+        // Convert to numeric seed if it's a string
+        if (typeof seedInput === 'string' && isNaN(seedInput)) {
+            this.currentSeed = this.stringToSeed(seedInput);
+        } else {
+            this.currentSeed = parseInt(seedInput);
+        }
+        
+        this.seedRandom = this.createSeededRandom(this.currentSeed);
         this.updateSeedDisplay();
     }
     
     updateSeedDisplay() {
         if (this.seedControl) {
-            this.seedControl.value = this.currentSeed.toString();
+            this.seedControl.value = this.currentSeedInput;
         }
     }
     
@@ -774,13 +796,15 @@ class WebGLFlowerGenerator {
         // Wire up seed control
         if (this.seedControl) {
             const applySeed = () => {
-                const seedValue = parseInt(this.seedControl.value);
-                if (!isNaN(seedValue) && seedValue >= 0 && seedValue <= 999999) {
-                    console.log('Applying seed:', seedValue);
-                    this.setSeed(seedValue);
+                const seedInput = this.seedControl.value.trim();
+                
+                // Accept any non-empty string (letters, numbers, Unicode, etc.)
+                if (seedInput.length > 0) {
+                    console.log('Applying seed:', seedInput);
+                    this.setSeed(seedInput);
                     this.generateFlower(true); // Use current seed, don't generate new one
                 } else {
-                    alert('Please enter a valid seed number (0-999999)');
+                    alert('Please enter a seed (letters or numbers)');
                     this.updateSeedDisplay(); // Reset to current valid seed
                 }
             };
@@ -906,6 +930,7 @@ class WebGLFlowerGenerator {
         // Generate new seed unless we're using a specific seed
         if (!useCurrentSeed) {
             this.currentSeed = this.generateRandomSeed();
+            this.currentSeedInput = this.currentSeed.toString(); // Update input display
             this.seedRandom = this.createSeededRandom(this.currentSeed);
         }
         
