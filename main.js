@@ -518,6 +518,10 @@ class WebGLFlowerGenerator {
                     vec2 leafP = p - leafPos;
                     // Leaf rotation angle varies by stem type
                     float leafAngle = (stemType == 2) ? leafSide * 0.6 : leafSide * 0.8;
+                    // Adjust rotation for right leaf on wiggle stem
+                    if (stemType == 3 && leafSide > 0.0) {
+                        leafAngle = 0.6;
+                    }
                     leafP = rotate(leafP, leafAngle);
                     
                     // Get leaf shape
