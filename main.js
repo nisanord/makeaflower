@@ -393,7 +393,7 @@ class WebGLFlowerGenerator {
                 return abs(p.x - curveX) - u_stemThickness;
             }
             
-            // Wiggle stem (high-frequency sine wave with 3 smooth peaks)
+            // Wiggle stem (sine wave with 3 smooth peaks)
             float wiggleStem(vec2 p) {
                 // Stem Y range: flower center to bottom
                 float stemTop = 0.0;
@@ -406,6 +406,24 @@ class WebGLFlowerGenerator {
                 
                 // High frequency (3π) with subtle amplitude for gentle waves
                 float curveX = sin(p.y * 9.42) * 0.03;
+                
+                // Horizontal distance to the curve
+                return abs(p.x - curveX) - u_stemThickness;
+            }
+            
+            // Mirrored wiggle stem (sine wave mirrored to the right)
+            float mirroredWiggleStem(vec2 p) {
+                // Stem Y range: flower center to bottom
+                float stemTop = 0.0;
+                float stemBottom = -1.0;
+                
+                // Only process points within stem Y range
+                if (p.y > stemTop || p.y < stemBottom) {
+                    return 1.0;
+                }
+                
+                // Mirrored wiggle (negative horizontal offset)
+                float curveX = -sin(p.y * 9.42) * 0.03;
                 
                 // Horizontal distance to the curve
                 return abs(p.x - curveX) - u_stemThickness;
@@ -452,6 +470,7 @@ class WebGLFlowerGenerator {
                 else if (stemType == 2) return mirroredCurvedStem(p);
                 else if (stemType == 3) return wiggleStem(p);
                 else if (stemType == 4) return branchStem(p);
+                else if (stemType == 5) return mirroredWiggleStem(p);
                 else return curvedStem(p);
             }
             
@@ -488,6 +507,9 @@ class WebGLFlowerGenerator {
                     } else if (stemType == 3) {
                         // Wiggle stem - follow the wiggle
                         stemX = sin(leafY * 9.42) * 0.03;
+                    } else if (stemType == 5) {
+                        // Mirrored wiggle stem - follow the mirrored wiggle
+                        stemX = -sin(leafY * 9.42) * 0.03;
                     }
                     
                     // Position leaf offset from the stem curve
@@ -520,6 +542,9 @@ class WebGLFlowerGenerator {
                     } else if (stemType == 3) {
                         // Wiggle stem - follow the wiggle
                         stemX = sin(leafY * 9.42) * 0.03;
+                    } else if (stemType == 5) {
+                        // Mirrored wiggle stem - follow the mirrored wiggle
+                        stemX = -sin(leafY * 9.42) * 0.03;
                     }
                     
                     // Position leaf offset from the stem curve
@@ -562,6 +587,11 @@ class WebGLFlowerGenerator {
                     // Wiggle stem: calculate slope at attachment point
                     float attachmentY = 0.0;
                     float stemSlope = cos(attachmentY * 9.42) * 9.42 * 0.03;
+                    stemAngle = atan(stemSlope) * 0.5;
+                } else if (u_stemType == 5) {
+                    // Mirrored wiggle stem: calculate slope at attachment point
+                    float attachmentY = 0.0;
+                    float stemSlope = -cos(attachmentY * 9.42) * 9.42 * 0.03;
                     stemAngle = atan(stemSlope) * 0.5;
                 }
                 
@@ -961,14 +991,14 @@ class WebGLFlowerGenerator {
             let stemType;
             if (useCurrentSeed) {
                 // Using specific seed: deterministic stem type
-                stemType = Math.floor(this.seedRandom() * 5); // 0-4: curved, straight, mirrored, wiggle, branch
+                stemType = Math.floor(this.seedRandom() * 6); // 0-5: curved, straight, mirrored, wiggle, branch, mirrored wiggle
             } else {
                 // Generating new: avoid branch repetition only
-                let availableStemTypes = [0, 1, 2, 3, 4]; // All stem types
+                let availableStemTypes = [0, 1, 2, 3, 4, 5]; // All stem types
                 
                 // If previous was branch (type 4), exclude it
                 if (this.previousStemType === 4) {
-                    availableStemTypes = [0, 1, 2, 3]; // Exclude branch
+                    availableStemTypes = [0, 1, 2, 3, 5]; // Exclude branch
                 }
                 
                 stemType = availableStemTypes[Math.floor(this.seedRandom() * availableStemTypes.length)];
@@ -981,8 +1011,8 @@ class WebGLFlowerGenerator {
             let flowerType;
             let baseAvailableTypes; // Base types determined by stem
             
-            if (stemType === 3) {
-                // Wiggle stems: only circle (4) and tulip (5)
+            if (stemType === 3 || stemType === 5) {
+                // Wiggle stems (regular and mirrored): only circle (4) and tulip (5)
                 baseAvailableTypes = [4, 5];
             } else if (stemType === 4) {
                 // Branch stems: only circle (4)
@@ -1018,8 +1048,7 @@ class WebGLFlowerGenerator {
             }
             
             const leafType = 1; // Always use circular leaves (type 1)
-            // Wiggle stems (type 3) never have leaves
-            let leafCount = (stemType === 3) ? 0 : Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
+            let leafCount = Math.floor(this.seedRandom() * 4); // 0-3: 0=no leaves, 1=first leaf, 2=second leaf, 3=both leaves
             // Tulip flowers (type 5) always have at least one leaf
             if (flowerType === 5 && leafCount === 0) {
                 leafCount = 1 + Math.floor(this.seedRandom() * 3); // 1-3: at least one leaf
@@ -1052,7 +1081,7 @@ class WebGLFlowerGenerator {
             petalCount, 
             flowerSize: flowerSize.toFixed(3), 
             flowerType,
-            stemType: ['CURVED', 'STRAIGHT', 'MIRRORED_CURVED', 'WIGGLE', 'BRANCH'][stemType],
+            stemType: ['CURVED', 'STRAIGHT', 'MIRRORED_CURVED', 'WIGGLE', 'BRANCH', 'MIRRORED_WIGGLE'][stemType],
             stemThickness: stemThickness.toFixed(4),
             stemToFlowerRatio: (stemThickness / flowerSize).toFixed(4),
             leafType: 'CIRCULAR',
