@@ -513,7 +513,7 @@ class WebGLFlowerGenerator {
                     }
                     
                     // Position leaf offset from the stem curve
-                    vec2 leafPos = vec2(stemX + leafSide * 0.05, leafY);
+                    vec2 leafPos = vec2(stemX + leafSide * 0.055, leafY);
                     
                     vec2 leafP = p - leafPos;
                     // Leaf rotation angle varies by stem type
